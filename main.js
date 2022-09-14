@@ -8,7 +8,8 @@ function main()
     var vertices = [
         0.5, 0.5, 
         0.0, 0.0, 
-        -0.5, 0.5
+        -0.5, 0.5,
+        0.0, 1.0
     ];
 
     // pindahin vertices ke GPU dari CPU
@@ -72,5 +73,5 @@ function main()
     gl.clearColor(1.0, 0.65, 0, 1.0); // values of red, green, blue, alpha
     gl.clear(gl.COLOR_BUFFER_BIT);
 
-    gl.drawArrays(gl.POINTS, 0, 3);
+    gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
 }
