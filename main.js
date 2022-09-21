@@ -28,15 +28,15 @@ function main()
     attribute vec2 aPosition;
     attribute vec3 aColor;
     uniform float uTheta;
-    uniform float uX;
-    uniform float uY;
+    uniform float uDx;
+    uniform float uDy;
 
     varying vec3 vColor; 
 
     void main()
     {
-        float x = -sin(uTheta) * aPosition.x + cos(uTheta) * aPosition.y + uX;
-        float y = cos(uTheta) * aPosition.x + sin(uTheta) * aPosition.y + uY;
+        float x = -sin(uTheta) * aPosition.x + cos(uTheta) * aPosition.y + uDx;
+        float y = cos(uTheta) * aPosition.x + sin(uTheta) * aPosition.y + uDy;
         gl_PointSize = 10.0;
         gl_Position =  vec4(x, y, 0.0, 1.0); 
 
@@ -77,14 +77,14 @@ function main()
 
     // Variabel lokal
     var theta = 0.0;
-    var x = 0.0;
-    var y = 0.0;
+    var dx = 0.0;
+    var dy = 0.0;
     var freeze = false;
 
     // Variabel pointer ke GLSL
     var uTheta = gl.getUniformLocation(shaderProgram, "uTheta");
-    var uX = gl.getUniformLocation(shaderProgram, "uX");
-    var uY = gl.getUniformLocation(shaderProgram, "uY");
+    var uDx = gl.getUniformLocation(shaderProgram, "uDx");
+    var uDy = gl.getUniformLocation(shaderProgram, "uDy");
 
     // Mengajari GPU bagaimana cara mengoleksi nilai 
     // posisi dari ARRAY_BUFFER untuk setiap vertex
@@ -113,10 +113,10 @@ function main()
     function onKeyDown(event)
     {
         if (event.keyCode == 32) freeze = true;
-        if (event.keyCode == 68) x += 0.1;
-        if (event.keyCode == 65) x -= 0.1;
-        if (event.keyCode == 87) y += 0.1;
-        if (event.keyCode == 83) y -= 0.1;
+        if (event.keyCode == 68) dx += 0.1;
+        if (event.keyCode == 65) dx -= 0.1;
+        if (event.keyCode == 87) dy += 0.1;
+        if (event.keyCode == 83) dy -= 0.1;
     }
     function onKeyUp(event)
     {
@@ -138,8 +138,8 @@ function main()
                 gl.uniform1f(uTheta, theta); // uniform1f() -> mentransfer uniform 1 saja yg berupa float
     
             }
-            gl.uniform1f(uX, x);
-            gl.uniform1f(uY, y);
+            gl.uniform1f(uDx, dx);
+            gl.uniform1f(uDy, dy);
 
             // contoh pentransferan lain
             // var vector2D = [x, y];
