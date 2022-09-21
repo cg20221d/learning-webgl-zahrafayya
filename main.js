@@ -6,10 +6,10 @@ function main()
     var gl = kanvas.getContext("webgl");
 
     var vertices = [
-        0.5, 0.5, 
-        0.0, 0.0, 
-        -0.5, 0.5,
-        0.0, 1.0
+        0.5, 0.5, 0.0, 1.0, 1.0,   // A: kanan atas (CYAN)
+        0.0, 0.0, 1.0, 0.0, 1.0,   // B: bawah tengah (MAGENTA)
+        -0.5, 0.5, 1.0, 1.0, 0.0,  // C: kiri atas (YELLOW)
+        0.0, 1.0, 1.0, 1.0, 1.0    // D: atas tengah (WHITE)
     ];
 
     // pindahin vertices ke GPU dari CPU
@@ -21,6 +21,9 @@ function main()
     var vertexShaderCode = /* yang akan ditulis di dalam sini adalah source code .glsl */
     `
     attribute vec2 aPosition;
+    attribute vec3 aColor;
+    varying vec3 vColor;
+
     void main()
     {
         float x = aPosition.x;
@@ -29,6 +32,8 @@ function main()
         gl_Position =  vec4(x, y, 0.0, 1.0); 
 
         // vec4. 4 di sana adalah yang dimaksud di ppt "setiap lambang 2,3,4 di vec yang menggambarkan dimensi"
+        
+        vColor = aColor;
     }
     `;
     var vertexShaderObject = gl.createShader(gl.VERTEX_SHADER);
@@ -38,12 +43,10 @@ function main()
     // Fragment Shader
     var fragmentShaderCode = `
     precision mediump float;
+    varying vec3 vColor;
     void main()
     {
-        float r = 0.0;
-        float g = 0.0;
-        float b = 1.0;
-        gl_FragColor = vec4(r, g, b, 1.0);
+        gl_FragColor = vec4(vColor, 1.0);
 
     }
     `;
@@ -67,8 +70,16 @@ function main()
     // posisi dari ARRAY_BUFFER untuk setiap vertex
     // yang sedang diproses
     var aPosition = gl.getAttribLocation(shaderProgram, "aPosition");
-    gl.vertexAttribPointer(aPosition, 2, gl.FLOAT, false, 0, 0);
+    gl.vertexAttribPointer(aPosition, 2, gl.FLOAT, false, 
+        5 * Float32Array.BYTES_PER_ELEMENT, 
+        0 * Float32Array.BYTES_PER_ELEMENT); // mulai dari array elemen ke-0
     gl.enableVertexAttribArray(aPosition);
+
+    var aColor = gl.getAttribLocation(shaderProgram, "aColor");
+    gl.vertexAttribPointer(aColor, 3, gl.FLOAT, false, 
+        5 * Float32Array.BYTES_PER_ELEMENT, 
+        2 * Float32Array.BYTES_PER_ELEMENT); // mulai dari array elemen ke-2
+    gl.enableVertexAttribArray(aColor);
 
     gl.clearColor(1.0, 0.65, 0, 1.0); // values of red, green, blue, alpha
     gl.clear(gl.COLOR_BUFFER_BIT);
