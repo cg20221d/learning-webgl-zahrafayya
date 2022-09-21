@@ -6,10 +6,10 @@ function main()
     var gl = kanvas.getContext("webgl");
 
     var vertices = [
-        0.5, 0.5, 0.0, 1.0, 1.0,   // A: kanan atas (CYAN)
-        0.0, 0.0, 1.0, 0.0, 1.0,   // B: bawah tengah (MAGENTA)
-        -0.5, 0.5, 1.0, 1.0, 0.0,  // C: kiri atas (YELLOW)
-        0.0, 1.0, 1.0, 1.0, 1.0    // D: atas tengah (WHITE)
+        0.5, 0.0, 0.0, 1.0, 1.0,   // A: kanan atas (CYAN)
+        0.0, -0.5, 1.0, 0.0, 1.0,   // B: bawah tengah (MAGENTA)
+        -0.5, 0.0, 1.0, 1.0, 0.0,  // C: kiri atas (YELLOW)
+        0.0, 0.5, 1.0, 1.0, 1.0    // D: atas tengah (WHITE)
     ];
 
     // pindahin vertices ke GPU dari CPU
@@ -17,17 +17,23 @@ function main()
     gl.bindBuffer(gl.ARRAY_BUFFER, buffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
 
+    // KOMPONEN-KOMPONEN PADA GLSL DAN JS
+    // 1: attribute = variabel yang ada pada .glsl
+    // 2: varying = variabel yang dapat dipassing dari vertex ke fragment dan sebaliknya
+    // 3: uniform = variabel yang bisa dipassing dari js ke glsl vertex/fragment
+
     // Vertex Shader
     var vertexShaderCode = /* yang akan ditulis di dalam sini adalah source code .glsl */
     `
     attribute vec2 aPosition;
     attribute vec3 aColor;
-    varying vec3 vColor;
+    uniform float uTheta;
+    varying vec3 vColor; 
 
     void main()
     {
-        float x = aPosition.x;
-        float y = aPosition.y;
+        float x = -sin(uTheta) * aPosition.x + cos(uTheta) * aPosition.y;
+        float y = cos(uTheta) * aPosition.x + sin(uTheta) * aPosition.y;
         gl_PointSize = 10.0;
         gl_Position =  vec4(x, y, 0.0, 1.0); 
 
@@ -66,6 +72,13 @@ function main()
     // alat (kuas) dipakai
     gl.useProgram(shaderProgram);
 
+    // Variabel lokal
+    var theta = 0.0;
+    var freeze = false;
+
+    // Variabel pointer ke GLSL
+    var uTheta = gl.getUniformLocation(shaderProgram, "uTheta");
+
     // Mengajari GPU bagaimana cara mengoleksi nilai 
     // posisi dari ARRAY_BUFFER untuk setiap vertex
     // yang sedang diproses
@@ -81,8 +94,50 @@ function main()
         2 * Float32Array.BYTES_PER_ELEMENT); // mulai dari array elemen ke-2
     gl.enableVertexAttribArray(aColor);
 
-    gl.clearColor(1.0, 0.65, 0, 1.0); // values of red, green, blue, alpha
-    gl.clear(gl.COLOR_BUFFER_BIT);
+    // Grafika interaktif
+    // Tetikus
+    function onMouseClick(event)
+    {
+        freeze = !freeze;
+    }
+    document.addEventListener("click", onMouseClick);
+    // Papan ketuk
+    function onKeyDown(event)
+    {
+        if (event.keyCode == 32) freeze = true;
+    }
+    function onKeyUp(event)
+    {
+        if (event.keyCode == 32) freeze = false;
+    }
+    document.addEventListener("keydown", onKeyDown);
+    document.addEventListener("keyup", onKeyUp);
 
-    gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+    function render()
+    {
+        setTimeout(function(){
+            gl.clearColor(1.0, 0.65, 0, 1.0); // values of red, green, blue, alpha
+            gl.clear(gl.COLOR_BUFFER_BIT);
+    
+            if (!freeze)
+            {
+                theta -= 0.1;
+                gl.uniform1f(uTheta, theta); // uniform1f() -> mentransfer uniform 1 saja yg berupa float
+    
+            }
+
+            // contoh pentransferan lain
+            // var vector2D = [x, y];
+            // gl.uniform2f(uTheta, vector2D[0], vector2D[1]);
+            // gl.uniform2fv(uTheta, vector2D);
+    
+            gl.drawArrays(gl.TRIANGLE_FAN, 0, 4);
+             // kecepatannya sama seperti clockspeed cpu
+            render();
+        }, 1000/60); // 60 fps
+    }
+
+    render();
 }
+
+    
