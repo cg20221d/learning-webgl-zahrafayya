@@ -35,10 +35,28 @@ function main()
 
     void main()
     {
-        float x = -sin(uTheta) * aPosition.x + cos(uTheta) * aPosition.y + uDx;
-        float y = cos(uTheta) * aPosition.x + sin(uTheta) * aPosition.y + uDy;
-        gl_PointSize = 10.0;
-        gl_Position =  vec4(x, y, 0.0, 1.0); 
+        // Tanpa Perkalian Matriks
+
+        // float x = -sin(uTheta) * aPosition.x + cos(uTheta) * aPosition.y + uDx;
+        // float y = cos(uTheta) * aPosition.x + sin(uTheta) * aPosition.y + uDy;
+        // gl_PointSize = 10.0;
+        // gl_Position =  vec4(x, y, 0.0, 1.0); 
+
+        // Dengan Perkalian Matriks
+        vec2 position = aPosition;
+        mat4 translation = mat4(
+            1.0, 0.0, 0.0, 0.0,
+            0.0, 1.0, 0.0, 0.0,
+            0.0, 0.0, 1.0, 0.0,
+            uDx, uDy, 0.0, 1.0
+        );
+        mat4 rotation = mat4(
+            cos(uTheta), sin(uTheta), 0.0, 0.0,
+            -sin(uTheta), cos(uTheta), 0.0, 0.0,
+            0.0, 0.0, 1.0, 0.0,
+            uDx, uDy, 0.0, 1.0
+        );
+        gl_Position = translation * rotation * vec4(position, 0.0, 1.0);
 
         // vec4. 4 di sana adalah yang dimaksud di ppt "setiap lambang 2,3,4 di vec yang menggambarkan dimensi"
         
@@ -112,7 +130,7 @@ function main()
     // Papan ketuk
     function onKeyDown(event)
     {
-        if (event.keyCode == 32) freeze = true;
+        if (event.keyCode == 32) freeze = !freeze;
         if (event.keyCode == 68) dx += 0.1;
         if (event.keyCode == 65) dx -= 0.1;
         if (event.keyCode == 87) dy += 0.1;
@@ -120,7 +138,7 @@ function main()
     }
     function onKeyUp(event)
     {
-        if (event.keyCode == 32) freeze = false;
+        // if (event.keyCode == 32) freeze = false;
     }
     document.addEventListener("keydown", onKeyDown);
     document.addEventListener("keyup", onKeyUp);
